@@ -11,14 +11,6 @@ def main():
     # Path options.
     parser.add_argument("--dataset_path", type=str, default="dataset.pt",
                         help="Path of the preprocessed dataset.")
-    parser.add_argument("--vocab_path", default=None, type=str,
-                        help="Path of the vocabulary file.")
-    parser.add_argument("--spm_model_path", default=None, type=str,
-                        help="Path of the sentence piece model.")
-    parser.add_argument("--tgt_vocab_path", default=None, type=str,
-                        help="Path of the target vocabulary file.")
-    parser.add_argument("--tgt_spm_model_path", default=None, type=str,
-                        help="Path of the target sentence piece model.")
     parser.add_argument("--pretrained_model_path", type=str, default=None,
                         help="Path of the pretrained model.")
     parser.add_argument("--output_model_path", type=str, required=True,
@@ -45,15 +37,8 @@ def main():
     parser.add_argument("--seed", type=int, default=7, help="Random seed.")
 
     # Preprocess options.
-    parser.add_argument("--tokenizer", choices=["bert", "char", "space", "xlmroberta"], default="bert",
-                        help="Specify the tokenizer." 
-                             "Original Google BERT uses bert tokenizer."
-                             "Char tokenizer segments sentences into characters."
-                             "Space tokenizer segments sentences into words according to space."
-                             "Original XLM-RoBERTa uses xlmroberta tokenizer."
-                             )
-    parser.add_argument("--tgt_tokenizer", choices=["bert", "char", "space", "xlmroberta"], default="bert",
-                        help="Specify the tokenizer for target side.")
+    tokenizer_opts(parser)
+    tgt_tokenizer_opts(parser)
 
     # Model options.
     model_opts(parser)
@@ -69,10 +54,8 @@ def main():
     parser.add_argument("--has_lmtarget_bias", action="store_true",
                         help="Add bias on output_layer for lm target.")
     parser.add_argument("--deep_init", action="store_true",
-                        help="initialize bert model similar to gpt2 model."
-                             "scales initialization of projection layers by a "
-                             "factor of 1/sqrt(2N). Necessary to train bert "
-                             "models larger than BERT-Large.")
+                        help="Scaling initialization of projection layers by a "
+                             "factor of 1/sqrt(2N). Necessary to large models.")
 
     # Masking options.
     parser.add_argument("--whole_word_masking", action="store_true", help="Whole word masking.")

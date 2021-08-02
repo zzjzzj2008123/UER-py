@@ -17,7 +17,7 @@ def train_and_validate(args):
 
     # Load vocabulary.
     if args.target == "seq2seq":
-        args.tgt_tokenizer = str2tokenizer[args.tgt_tokenizer](args)
+        args.tgt_tokenizer = str2tokenizer[args.tgt_tokenizer](args, is_src=False)
         args.tgt_vocab = args.tgt_tokenizer.vocab
 
     args.tokenizer = str2tokenizer[args.tokenizer](args)
@@ -304,7 +304,7 @@ class Seq2seqTrainer(Trainer):
 
     def forward_propagation(self, batch, model):
         src, tgt_in, tgt_out, seg = batch
-        loss_info = model(src, (tgt_in, tgt_out, src), seg)
+        loss_info = model(src, (tgt_in, tgt_out, seg), seg)
         loss, correct, denominator = loss_info
         self.total_loss += loss.item()
         self.total_correct += correct.item()
@@ -352,7 +352,8 @@ class PrefixlmTrainer(MlmTrainer):
 
 str2trainer = {"bert": BertTrainer, "mlm": MlmTrainer, "lm": LmTrainer,
                "albert": AlbertTrainer, "bilm": BilmTrainer, "cls": ClsTrainer,
-               "seq2seq": Seq2seqTrainer, "t5": T5Trainer, "gsg": GsgTrainer, "bart": BartTrainer}
+               "seq2seq": Seq2seqTrainer, "t5": T5Trainer, "gsg": GsgTrainer,
+               "bart": BartTrainer, "prefixlm": PrefixlmTrainer}
 
 
 def worker(proc_id, gpu_ranks, args, model):
@@ -379,16 +380,12 @@ def worker(proc_id, gpu_ranks, args, model):
     else:
         train_loader = str2dataloader[args.target](args, args.dataset_path, args.batch_size, 0, 1, True)
 
-    if gpu_id is not None:
-        torch.cuda.set_device(gpu_id)
-        model.cuda(gpu_id)
-
     # Build optimizer.
     param_optimizer = list(model.named_parameters())
     no_decay = ["bias", "gamma", "beta"]
     optimizer_grouped_parameters = [
-        {"params": [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], "weight_decay_rate": 0.01},
-        {"params": [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], "weight_decay_rate": 0.0}
+        {"params": [p for n, p in param_optimizer if not any(nd in n for nd in no_decay)], "weight_decay": 0.01},
+        {"params": [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], "weight_decay": 0.0}
     ]
     if args.optimizer in ["adamw"]:
         optimizer = str2optimizer[args.optimizer](optimizer_grouped_parameters, lr=args.learning_rate, correct_bias=False)
@@ -401,6 +398,9 @@ def worker(proc_id, gpu_ranks, args, model):
         scheduler = str2scheduler[args.scheduler](optimizer, args.total_steps*args.warmup)
     else:
         scheduler = str2scheduler[args.scheduler](optimizer, args.total_steps*args.warmup, args.total_steps)
+
+    if gpu_id is not None:
+        model.cuda(gpu_id)
 
     if args.fp16:
         try:

@@ -28,6 +28,7 @@ def model_opts(parser):
     parser.add_argument("--bidirectional", action="store_true", help="Specific to recurrent model.")
     parser.add_argument("--factorized_embedding_parameterization", action="store_true", help="Factorized embedding parameterization.")
     parser.add_argument("--parameter_sharing", action="store_true", help="Parameter sharing.")
+    parser.add_argument("--has_residual_attention", action="store_true", help="Add residual attention.")
 
 
 def optimization_opts(parser):
@@ -69,10 +70,6 @@ def finetune_opts(parser):
                         help="Path of the pretrained model.")
     parser.add_argument("--output_model_path", default="models/finetuned_model.bin", type=str,
                         help="Path of the output model.")
-    parser.add_argument("--vocab_path", default=None, type=str,
-                        help="Path of the vocabulary file.")
-    parser.add_argument("--spm_model_path", default=None, type=str,
-                        help="Path of the sentence piece model.")
     parser.add_argument("--train_path", type=str, required=True,
                         help="Path of the trainset.")
     parser.add_argument("--dev_path", type=str, required=True,
@@ -96,10 +93,6 @@ def infer_opts(parser):
     # Path options.
     parser.add_argument("--load_model_path", default=None, type=str,
                         help="Path of the input model.")
-    parser.add_argument("--vocab_path", default=None, type=str,
-                        help="Path of the vocabulary file.")
-    parser.add_argument("--spm_model_path", default=None, type=str,
-                        help="Path of the sentence piece model.")
     parser.add_argument("--test_path", type=str, required=True,
                         help="Path of the testset.")
     parser.add_argument("--prediction_path", type=str, required=True,
@@ -125,3 +118,16 @@ def tokenizer_opts(parser):
                              "Space tokenizer segments sentences into words according to space."
                              "Original XLM-RoBERTa uses xlmroberta tokenizer."
                              )
+    parser.add_argument("--vocab_path", default=None, type=str,
+                        help="Path of the vocabulary file.")
+    parser.add_argument("--spm_model_path", default=None, type=str,
+                        help="Path of the sentence piece model.")
+
+
+def tgt_tokenizer_opts(parser):
+    parser.add_argument("--tgt_tokenizer", choices=["bert", "char", "space", "xlmroberta"], default="bert",
+                        help="Specify the tokenizer for target side.")
+    parser.add_argument("--tgt_vocab_path", default=None, type=str,
+                        help="Path of the target vocabulary file.")
+    parser.add_argument("--tgt_spm_model_path", default=None, type=str,
+                        help="Path of the target sentence piece model.")

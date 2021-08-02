@@ -22,6 +22,11 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     infer_opts(parser)
+
+    parser.add_argument("--vocab_path", default=None, type=str,
+                        help="Path of the vocabulary file.")
+    parser.add_argument("--spm_model_path", default=None, type=str,
+                        help="Path of the sentence piece model.")
     parser.add_argument("--doc_stride", default=128, type=int,
                         help="When splitting up a long document into chunks, how much stride to take between chunks.")
 

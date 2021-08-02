@@ -1,5 +1,5 @@
 """
-This script provides an exmaple to wrap UER-py for classification with cross validation.
+This script provides an example to wrap UER-py for classification with cross validation.
 """
 import sys
 import os
@@ -91,6 +91,8 @@ def main():
     acc, marco_f1 = 0.0, 0.0
 
     for fold_id in range(args.folds_num):
+        torch.cuda.empty_cache()
+
         # Build classification model.
         model = Classifier(args)
 

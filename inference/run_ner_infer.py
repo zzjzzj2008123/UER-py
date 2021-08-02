@@ -61,8 +61,14 @@ def main():
 
     infer_opts(parser)
 
+    parser.add_argument("--vocab_path", default=None, type=str,
+                        help="Path of the vocabulary file.")
+    parser.add_argument("--spm_model_path", default=None, type=str,
+                        help="Path of the sentence piece model.")
     parser.add_argument("--label2id_path", type=str, required=True,
                         help="Path of the label2id file.")
+    parser.add_argument("--crf_target", action="store_true",
+                        help="Use CRF loss as the target function or not, default False.")
     
     args = parser.parse_args()
 
@@ -113,8 +119,8 @@ def main():
             src_batch = src_batch.to(device)
             seg_batch = seg_batch.to(device)
             with torch.no_grad():
-                _, logits = model(src_batch, None, seg_batch)
-            pred = logits.argmax(dim=-1)
+                _, pred = model(src_batch, None, seg_batch)
+
             # Storing sequence length of instances in a batch.
             seq_length_batch = []
             for seg in seg_batch.cpu().numpy().tolist():
